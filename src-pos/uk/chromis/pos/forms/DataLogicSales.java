@@ -1182,25 +1182,27 @@ public class DataLogicSales extends BeanFactoryDataSingle {
             public Object transact() throws BasicException {
 
                 // Set Receipt Id
-                if (ticket.getTicketId() == 0) {
                     switch (ticket.getTicketType()) {
-                        case TicketInfo.RECEIPT_NORMAL:
+                        case NORMAL:
                             ticket.setTicketId(getNextTicketIndex());
                             break;
-                        case TicketInfo.RECEIPT_REFUND:
+                        case REFUND:
                             ticket.setTicketId(getNextTicketRefundIndex());
                             break;
-                        case TicketInfo.RECEIPT_PAYMENT:
+                        case PAYMENT:
                             ticket.setTicketId(getNextTicketPaymentIndex());
                             break;
-                        case TicketInfo.RECEIPT_NOSALE:
+                        case NOSALE:
                             ticket.setTicketId(getNextTicketPaymentIndex());
                             break;
+                        case INVOICE:
+                            ticket.setTicketId(getNextTicketInvoiceIndex());
+                            break;
+                            
                         default:
                             throw new BasicException();
                     }
-                }
-
+                
                 // new receipt
                 // Modified JG Aug 2011 - person
                 new PreparedSentence(s, "INSERT INTO RECEIPTS (ID, MONEY, DATENEW, ATTRIBUTES, PERSON) VALUES (?, ?, ?, ?, ?)", SerializerWriteParams.INSTANCE
@@ -1228,7 +1230,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                     @Override
                     public void writeValues() throws BasicException {
                         setString(1, ticket.getId());
-                        setInt(2, ticket.getTicketType());
+                        setInt(2, ticket.getTicketType().getId());
                         setInt(3, ticket.getTicketId());
                         setString(4, ticket.getUser().getId());
                         setString(5, ticket.getCustomerId());
@@ -1404,6 +1406,10 @@ public class DataLogicSales extends BeanFactoryDataSingle {
      */
     public final Integer getNextTicketIndex() throws BasicException {
         return (Integer) s.DB.getSequenceSentence(s, "TICKETSNUM").find();
+    }
+    
+    public final Integer getNextTicketInvoiceIndex() throws BasicException {
+        return (Integer) s.DB.getSequenceSentence(s, "TICKETSNUM_INVOICE").find();
     }
 
     /**
